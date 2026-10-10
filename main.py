@@ -19,34 +19,34 @@ app.add_middleware(
 )
 
 
-class Task(BaseModel):
+class TaskSchema(BaseModel):
     id: str
     title: str
     completed: bool
 
 
-class TaskCreate(BaseModel):
+class TaskCreateSchema(BaseModel):
     title: str
 
 
-class Book(BaseModel):
-    book: str
+class TaskUpdateSchema(BaseModel):
+    title: str | None = None
+    completed: bool | None = None
 
 
-tasks: list[Task] = []
-book = ""
+tasks: list[TaskSchema] = []
 
 
-@app.get("/tasks", response_model=list[Task])
-async def get_tasks() -> list[Task]:
+@app.get("/tasks", response_model=list[TaskSchema])
+async def get_tasks() -> list[TaskSchema]:
     """Получить спсиок задач"""
     return tasks
 
 
-@app.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED)
-async def create_task(task_create: TaskCreate) -> Task:
+@app.post("/tasks", response_model=TaskSchema, status_code=status.HTTP_201_CREATED)
+async def create_task(task_create: TaskCreateSchema) -> TaskSchema:
     """Создать задачу"""
-    task = Task(
+    task = TaskSchema(
         id=str(uuid4()),
         **task_create.model_dump(),
         completed=False
@@ -55,6 +55,26 @@ async def create_task(task_create: TaskCreate) -> Task:
     tasks.append(task)
 
     return task
+
+
+@app.patch("/tasks/{task_id}", response_model=TaskSchema)
+async def update_task(task_id: str, payload: TaskUpdateSchema) -> TaskSchema:
+    """Обновить задачу"""
+    for task in tasks:
+        if task.id == task_id:
+            update_data = payload.model_dump(exclude_unset=True)
+
+            for k, v in update_data.items():
+                setattr(task, k, v)
+
+            return task
+
+
+class Book(BaseModel):
+    book: str
+
+
+book = ""
 
 
 @app.get("/book")
