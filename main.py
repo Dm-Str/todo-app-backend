@@ -70,6 +70,13 @@ async def update_task(task_id: str, payload: TaskUpdateSchema) -> TaskSchema:
             return task
 
 
+@app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_task(task_id: str) -> None:
+    """Удалить задачу"""
+    global tasks
+    tasks = [task for task in tasks if task.id != task_id]
+
+
 class Book(BaseModel):
     book: str
 
