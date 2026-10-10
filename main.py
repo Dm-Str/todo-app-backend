@@ -78,6 +78,62 @@ async def delete_task(task_id: str) -> None:
             tasks.remove(task)
 
 
+class CategorySchema(BaseModel):
+    id: str
+    name: str
+
+
+class CategoryCreateSchema(BaseModel):
+    name: str
+
+
+class CategoryUpdateSchema(BaseModel):
+    name: str | None = None
+
+
+categories: list[CategorySchema] = []
+
+
+@app.get("/categories", response_model=list[CategorySchema])
+async def get_categories() -> list[CategorySchema]:
+    """Получить список категорий"""
+    return categories
+
+
+@app.post("/categories", response_model=CategorySchema, status_code=status.HTTP_201_CREATED)
+async def create_category(category_create: CategoryCreateSchema) -> CategorySchema:
+    """Создать категорию"""
+    category = CategorySchema(
+        id=str(uuid4()),
+        **category_create.model_dump()
+    )
+
+    categories.append(category)
+
+    return category
+
+
+@app.patch("/categories/{category_id}", response_model=CategorySchema)
+async def update_category(category_id: str, payload: CategoryUpdateSchema) -> CategorySchema:
+    """Обновить категорию"""
+    for category in categories:
+        if category.id == category_id:
+            update_data = payload.model_dump(exclude_unset=True)
+
+            for k, v in update_data.items():
+                setattr(category, k, v)
+
+            return category
+
+
+@app.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_category(category_id: str) -> None:
+    """Удалить категорию"""
+    for category in categories:
+        if category.id == category_id:
+            categories.remove(category)
+
+
 class Book(BaseModel):
     book: str
 
