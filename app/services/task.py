@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
 
 from app.repositories.task import TaskRepository
-from app.schemas.task import TaskSchema, TaskCreateSchema, TaskUpdateSchema
+from app.schemas.task import TaskCreateSchema, TaskSchema, TaskUpdateSchema
 
 
 class TaskNotFoundError(Exception):
     """Исключение, возникающее при попытке получить задачу по несуществующему id"""
+
     pass
 
 
@@ -29,14 +30,16 @@ class TaskService:
         return TaskSchema.model_validate(task)
 
     def update_task(self, task_id: str, payload: TaskUpdateSchema) -> TaskSchema:
-        """"Обновить задачу"""
+        """ "Обновить задачу"""
         task = self.repository.get_by_id(task_id)
 
         if task is None:
             raise TaskNotFoundError(f"Task with id {task_id} not found")
 
         task.title = payload.title if payload.title is not None else task.title
-        task.completed = payload.completed if payload.completed is not None else task.completed
+        task.completed = (
+            payload.completed if payload.completed is not None else task.completed
+        )
 
         self.db.commit()
 

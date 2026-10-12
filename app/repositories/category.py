@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -8,7 +10,7 @@ class CategoryRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_all(self) -> list[CategoryORM]:
+    def get_all(self) -> Sequence[CategoryORM]:
         """Получить все записи categories"""
         return self.db.scalars(select(CategoryORM)).all()
 

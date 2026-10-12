@@ -1,11 +1,16 @@
 from sqlalchemy.orm import Session
 
 from app.repositories.category import CategoryRepository
-from app.schemas.category import CategorySchema, CategoryCreateSchema, CategoryUpdateSchema
+from app.schemas.category import (
+    CategoryCreateSchema,
+    CategorySchema,
+    CategoryUpdateSchema,
+)
 
 
 class CategoryNotFoundError(Exception):
     """Исключение, возникающее при попытке получить категорию по несуществующему id"""
+
     pass
 
 
@@ -25,13 +30,16 @@ class CategoryService:
 
         return CategorySchema.model_validate(category)
 
-    def update_category(self, category_id: str, payload: CategoryUpdateSchema) -> CategorySchema:
+    def update_category(
+        self, category_id: str, payload: CategoryUpdateSchema
+    ) -> CategorySchema:
         category = self.repository.get_by_id(category_id)
 
         if category is None:
             raise CategoryNotFoundError(f"Category with id {category_id} not found")
 
-        category.name = payload.name if payload.name is not None else payload.name
+        if payload.name is not None:
+            category.name = payload.name
 
         self.db.commit()
 
